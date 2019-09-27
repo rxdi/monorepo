@@ -1,0 +1,12 @@
+{
+  "stacks": {
+    "back": {
+      "build": "dir",
+      "start": "dir"
+    },
+    "front": {
+      "build": "dir",
+      "start": "dir"
+    }
+  }
+}
