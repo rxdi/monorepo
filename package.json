@@ -1,0 +1,20 @@
+{
+  "name": "@rxdi/monorepo",
+  "version": "0.0.1",
+  "description": "",
+  "main": "./dist/main.js",
+  "scripts": {
+    "build": "gapi build",
+    "patch": "npm version patch && npm publish --update-readme --access public"
+  },
+  "bin": {
+    "repo": "./dist/main.js"
+  },
+  "author": "Kristiyan Tachev(@Stradivario)",
+  "license": "MIT",
+  "devDependencies": {
+    "@rxdi/parcel-plugin-shebang": "0.7.5",
+    "@types/node": "^12.7.8",
+    "typescript": "^3.6.3"
+  }
+}
