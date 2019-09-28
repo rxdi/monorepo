@@ -1,43 +1,63 @@
 import { RunProcess } from '../helpers/run-process';
-import { readConfig, StackScriptOptions } from '../helpers/read-config';
-import { BehaviorSubject } from '../helpers/rx-fake';
-export interface Stack {
-  name: string;
-  options: StackScriptOptions;
-  commands: string[];
-}
+import { readConfig, Stack } from '../helpers/read-config';
+
 export async function Run(stack: string) {
   const config = await readConfig();
   let stacks = Object.keys(config.stacks);
+
+  const StacksMappedOriginal = stacks.map(name => ({
+    name,
+    options: config.stacks[name].options,
+    commands: Object.keys(config.stacks[name].commands).map(
+      key => config.stacks[name].commands[key]
+    )
+  }));
+  let StacksMapped = [...StacksMappedOriginal];
   if (stack) {
-    stacks = stacks.filter(s => s === stack);
+    StacksMapped = StacksMapped.filter(s => s.name === stack);
   }
+  const priorityQueue = StacksMapped.filter(
+    s => s.options && s.options.depends
+  ) as Stack[];
   await Promise.all(
-    stacks
-      .map(name => ({
-        name,
-        options: config.stacks[name].options,
-        commands: Object.keys(config.stacks[name].commands).map(
-          key => config.stacks[name].commands[key]
-        )
-      }))
-      .map(async stack => {
-        if (stack.options.depends && stack.options.depends.length) {
-          setTimeout(async () => await RunCommands(stack), 4000);
-        } else {
-          console.log(`Running stack name: ${stack.name}`);
-          console.log(
-            `Running stack commands: ${JSON.stringify(stack.commands)}`
+    priorityQueue.map(async queue => {
+      for (const depend of queue.options.depends) {
+        const dependFound = StacksMappedOriginal.find(s => s.name === depend);
+        if (!dependFound) {
+          throw new Error(
+            `Missing depend ${depend} inside service ${JSON.stringify(
+              queue,
+              null,
+              2
+            )}`
           );
-          await RunCommands(stack);
-          console.log('AAAAAAA OOMG')
         }
-      })
+        await RunCommands(dependFound);
+      }
+    })
+  );
+  await Promise.all(priorityQueue.map(async queue => await RunCommands(queue)));
+  StacksMapped = StacksMapped.filter(
+    s => {
+      if (priorityQueue.includes({ name: s.name })) {
+        return false;
+      }
+      if (priorityQueue.filter(q => q.options.depends.find(d => d === s.name)).length) {
+        return false;
+      }
+      if (priorityQueue.find(q => q.name === s.name)) {
+        return false;
+      }
+      return true;
+    }
+  )
+  await Promise.all(
+    StacksMapped.map(stack => RunCommands(stack))
   );
 }
 
 async function RunCommands(stack: Stack) {
   for (const cmd of stack.commands) {
-    await RunProcess(cmd, stack.options.cwd);
+    await RunProcess(cmd, stack.options.cwd, stack.options.signal);
   }
 }

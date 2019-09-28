@@ -1,9 +1,19 @@
 import { spawn, ChildProcessWithoutNullStreams } from 'child_process';
 
-export const RunProcess = (command: string, cwd: string = process.cwd()) => {
+export const RunProcess = (
+  command: string,
+  cwd: string = process.cwd(),
+  signal?: string
+) => {
   return new Promise(resolve => {
-    console.log(command);
+    console.log(`Starting process: ${command}`);
     const child = spawn('npx', command.split(' '), { cwd });
+    child.stdout.on('data', (message: number) => {
+      if (message.toString().includes(signal)) {
+        console.log(`Resolve signal triggered '${message.toString()}'`);
+        resolve(message);
+      }
+    });
     child.stdout.pipe(process.stdout);
     child.stderr.pipe(process.stderr);
     process.stdin.resume(); //so the program will not close instantly
