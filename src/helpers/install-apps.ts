@@ -7,6 +7,6 @@ import { readdir } from 'fs';
 export async function installApps() {
     const appsFolder = join(process.cwd(), MAIN_FOLDER, CONFIG.apps);
   const folders = await promisify(readdir)(appsFolder);
-  console.log(`Installing following @apps ${folders}`)
+  console.log(`Executing 'npm install' on following @apps: '${folders}'`)
   await Promise.all(folders.map(folder => NpmInstall(join(appsFolder, folder))))
 }

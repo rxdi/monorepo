@@ -54,6 +54,12 @@ Will create `shared` empty module inside `root/src/@shared`
 repo compile
 ```
 
+Watch mode
+
+```bash
+repo compile --watch
+```
+
 
 ## Configuration
 
