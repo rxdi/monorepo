@@ -16,7 +16,7 @@ export async function Run(stack: string) {
   if (stack) {
     StacksMapped = StacksMapped.filter(s => s.name === stack);
   }
-  const priorityQueue = StacksMapped.filter(
+  let priorityQueue = StacksMapped.filter(
     s => s.options && s.options.depends
   ) as Stack[];
   await Promise.all(
@@ -36,6 +36,9 @@ export async function Run(stack: string) {
       }
     })
   );
+  // Filter unique priorityQueue
+  // priorityQueue = [...new Set(priorityQueue.map(item => item.name).map(name => StacksMapped.find(s => s.name === name)))];
+
   await Promise.all(priorityQueue.map(async queue => await RunCommands(queue)));
   StacksMapped = StacksMapped.filter(
     s => {
