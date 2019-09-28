@@ -1,4 +1,5 @@
 import { join } from 'path';
+import { nextOrDefault } from './args-extrators';
 export interface StackScriptOptions {
   cwd: string;
   depends: string[];
@@ -12,11 +13,12 @@ export interface StackScript {
 }
 export interface Stack {
   name: string;
-  options: StackScriptOptions;
-  commands: string[];
+  options?: StackScriptOptions;
+  commands?: string[];
 }
 export async function readConfig(): Promise<{
   stacks: StackScript;
 }> {
-  return require(join(process.cwd(), 'repo.json'));
+  console.log(nextOrDefault('-c', 'repo.json'))
+  return require(join(process.cwd(), nextOrDefault('-c', 'repo.json')));
 }

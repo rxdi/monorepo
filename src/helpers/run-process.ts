@@ -6,11 +6,11 @@ export const RunProcess = (
   signal?: string
 ) => {
   return new Promise(resolve => {
-    console.log(`Starting process: ${command}`);
+    console.log(`Starting process: "${command}" Directory: ${cwd}`);
     const child = spawn('npx', command.split(' '), { cwd });
     child.stdout.on('data', (message: number) => {
       if (message.toString().includes(signal)) {
-        console.log(`Resolve signal triggered '${message.toString()}'`);
+        console.log(`Resolve signal triggered '${signal}'`);
         resolve(message);
       }
     });

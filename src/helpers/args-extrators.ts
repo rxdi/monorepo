@@ -1,4 +1,4 @@
-export type Tasks = '--watch';
+export type Tasks = '--watch' | '-c';
 export const includes = (i: Tasks) => process.argv.toString().includes(i);
 export const nextOrDefault = (
   i: Tasks,

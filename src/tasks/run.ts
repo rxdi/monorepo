@@ -13,50 +13,52 @@ export async function Run(stack: string) {
     )
   }));
   let StacksMapped = [...StacksMappedOriginal];
-  if (stack) {
+  if (stack && !stack.includes('-c')) {
     StacksMapped = StacksMapped.filter(s => s.name === stack);
   }
   let priorityQueue = StacksMapped.filter(
     s => s.options && s.options.depends
   ) as Stack[];
-  await Promise.all(
-    priorityQueue.map(async queue => {
-      for (const depend of queue.options.depends) {
-        const dependFound = StacksMappedOriginal.find(s => s.name === depend);
-        if (!dependFound) {
-          throw new Error(
-            `Missing depend ${depend} inside service ${JSON.stringify(
-              queue,
-              null,
-              2
-            )}`
-          );
-        }
-        await RunCommands(dependFound);
-      }
-    })
-  );
-  // Filter unique priorityQueue
-  // priorityQueue = [...new Set(priorityQueue.map(item => item.name).map(name => StacksMapped.find(s => s.name === name)))];
+  const dependQueue: Stack[] = []
 
-  await Promise.all(priorityQueue.map(async queue => await RunCommands(queue)));
-  StacksMapped = StacksMapped.filter(
-    s => {
-      if (priorityQueue.includes({ name: s.name })) {
-        return false;
+  priorityQueue.forEach(queue => {
+    for (const depend of queue.options.depends) {
+      const dependFound = StacksMappedOriginal.find(s => s.name === depend);
+      if (!dependFound) {
+        throw new Error(
+          `Missing depend ${depend} inside service ${JSON.stringify(
+            queue,
+            null,
+            2
+          )}`
+        );
       }
-      if (priorityQueue.filter(q => q.options.depends.find(d => d === s.name)).length) {
-        return false;
+      if (!priorityQueue.find(queue => queue.name === dependFound.name)) {
+        dependQueue.push(dependFound)
       }
-      if (priorityQueue.find(q => q.name === s.name)) {
-        return false;
-      }
-      return true;
     }
-  )
-  await Promise.all(
-    StacksMapped.map(stack => RunCommands(stack))
-  );
+  });
+
+  for (const depend of [...new Set(dependQueue.map(item => item.name).map(name => StacksMapped.find(s => s.name === name)))]) {
+    await RunCommands(depend);
+  }
+  await Promise.all(priorityQueue.map(async queue => await RunCommands(queue)));
+  StacksMapped = StacksMapped.filter(s => {
+    if (priorityQueue.includes({ name: s.name })) {
+      return false;
+    }
+    if (
+      priorityQueue.filter(q => q.options.depends.find(d => d === s.name))
+        .length
+    ) {
+      return false;
+    }
+    if (priorityQueue.find(q => q.name === s.name)) {
+      return false;
+    }
+    return true;
+  });
+  await Promise.all(StacksMapped.map(stack => RunCommands(stack)));
 }
 
 async function RunCommands(stack: Stack) {
