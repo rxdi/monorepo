@@ -60,6 +60,17 @@ Watch mode
 repo compile --watch
 ```
 
+#### Start all stacks
+
+```bash
+repo run
+```
+
+#### Start specific stack
+
+```bash
+repo run frontend
+```
 
 ## Configuration
 
