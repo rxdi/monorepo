@@ -53,3 +53,61 @@ Will create `shared` empty module inside `root/src/@shared`
 ```bash
 repo compile
 ```
+
+
+## Configuration
+
+```json
+{
+  "stacks": {
+    "daemon": {
+      "options": {
+        "cwd": "."
+      },
+      "commands": {
+        "stop": "gapi daemon stop",
+        "clean": "gapi daemon clean",
+        "start": "gapi daemon start",
+        "link": "gapi daemon link graphql"
+      }
+    },
+    "frontend": {
+      "options": {
+        "cwd": "./src/@apps/frontend/"
+      },
+      "commands": {
+        "run": "parcel ./src/index.html"
+      }
+    },
+    "api": {
+      "options": {
+        "cwd": "./src/@apps/api/"
+      },
+      "commands": {
+        "run": "gapi start --local --lint --minify=false"
+      }
+    },
+    "gateway": {
+      "options": {
+        "depends": [
+          "api",
+          "vscode-cloud"
+
+        ],
+        "cwd": "./src/@apps/gateway/"
+      },
+      "commands": {
+        "run": "gapi start --local --path=./index.ts"
+      }
+    },
+    "vscode-cloud": {
+      "options": {
+        "cwd": "./src/@apps/vscode-cloud/"
+      },
+      "commands": {
+        "run": "gapi start --local --inspect --minify=false"
+      }
+    }
+  }
+}
+```

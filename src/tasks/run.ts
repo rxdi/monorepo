@@ -1,6 +1,13 @@
 import { RunProcess } from '../helpers/run-process';
-import { readConfig } from '../helpers/read-config';
-
+import {
+  readConfig,
+  StackScriptOptions,
+} from '../helpers/read-config';
+export interface Stack {
+  name: string;
+  options: StackScriptOptions;
+  commands: string[];
+}
 export async function Run(stack: string) {
   const config = await readConfig();
   let stacks = Object.keys(config.stacks);
@@ -11,8 +18,9 @@ export async function Run(stack: string) {
     stacks
       .map(name => ({
         name,
-        commands: Object.keys(config.stacks[name]).map(
-          key => config.stacks[name][key]
+        options: config.stacks[name].options,
+        commands: Object.keys(config.stacks[name].commands).map(
+          key => config.stacks[name].commands[key]
         )
       }))
       .map(async stack => {
@@ -20,9 +28,13 @@ export async function Run(stack: string) {
         console.log(
           `Running stack commands: ${JSON.stringify(stack.commands)}`
         );
-        for (const cmd of stack.commands) {
-          await RunProcess(cmd);
-        }
+        await RunCommands(stack);
       })
   );
+}
+
+async function RunCommands(stack: Stack) {
+  for (const cmd of stack.commands) {
+    await RunProcess(cmd, stack.options.cwd);
+  }
 }

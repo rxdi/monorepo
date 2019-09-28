@@ -2,6 +2,7 @@ import { spawn, ChildProcessWithoutNullStreams } from 'child_process';
 
 export const RunProcess = (command: string, cwd: string = process.cwd()) => {
   return new Promise(resolve => {
+    console.log(command);
     const child = spawn('npx', command.split(' '), { cwd });
     child.stdout.pipe(process.stdout);
     child.stderr.pipe(process.stderr);
@@ -9,14 +10,13 @@ export const RunProcess = (command: string, cwd: string = process.cwd()) => {
 
     function exitHandler(child: ChildProcessWithoutNullStreams) {
       child.kill();
-      process.exit()
     }
 
     //do something when app is closing
     process.on('exit', exitHandler.bind(null, child));
 
     //catches ctrl+c event
-    process.on('SIGINT', exitHandler.bind(null, child));
+    process.on('SIGINT', () => process.exit());
 
     // catches "kill pid" (for example: nodemon restart)
     process.on('SIGUSR1', exitHandler.bind(null, child));
