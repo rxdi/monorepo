@@ -11,7 +11,6 @@ export const TranspileTypescript = (cwd: string) => {
     child.stdout.pipe(process.stdout);
     child.stderr.pipe(process.stderr);
 
-    process.stdin.resume(); //so the program will not close instantly
 
     function exitHandler(child: ChildProcessWithoutNullStreams) {
       child.kill();
