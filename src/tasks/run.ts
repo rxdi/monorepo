@@ -1,8 +1,6 @@
 import { RunProcess } from '../helpers/run-process';
-import {
-  readConfig,
-  StackScriptOptions,
-} from '../helpers/read-config';
+import { readConfig, StackScriptOptions } from '../helpers/read-config';
+import { BehaviorSubject } from '../helpers/rx-fake';
 export interface Stack {
   name: string;
   options: StackScriptOptions;
@@ -24,11 +22,16 @@ export async function Run(stack: string) {
         )
       }))
       .map(async stack => {
-        console.log(`Running stack name: ${stack.name}`);
-        console.log(
-          `Running stack commands: ${JSON.stringify(stack.commands)}`
-        );
-        await RunCommands(stack);
+        if (stack.options.depends && stack.options.depends.length) {
+          setTimeout(async () => await RunCommands(stack), 4000);
+        } else {
+          console.log(`Running stack name: ${stack.name}`);
+          console.log(
+            `Running stack commands: ${JSON.stringify(stack.commands)}`
+          );
+          await RunCommands(stack);
+          console.log('AAAAAAA OOMG')
+        }
       })
   );
 }
