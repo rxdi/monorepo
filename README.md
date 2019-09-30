@@ -73,56 +73,64 @@ repo run frontend
 ```
 
 ## Configuration
-
+`repo.json` is default file
+You can specify more complex runner stacks by passing `-c` argument with path to `custom` json file like so: `repo run frontend -c ./my-custom.json` or running whole stack `repo run -c ./my-custom.json`
 ```json
 {
   "stacks": {
-    "daemon": {
-      "options": {
-        "cwd": "."
-      },
-      "commands": {
-        "stop": "gapi daemon stop",
-        "clean": "gapi daemon clean",
-        "start": "gapi daemon start",
-        "link": "gapi daemon link graphql"
-      }
-    },
     "frontend": {
       "options": {
-        "cwd": "./src/@apps/frontend/"
+        "cwd": "./src/@apps/frontend/",
+        "depends": ["gateway"],
+        "signal": "Built in"
       },
       "commands": {
-        "run": "parcel ./src/index.html"
+        "clean": "rm -rf .cache",
+        "link": "gapi daemon link graphql",
+        "run": "npm start"
       }
     },
     "api": {
       "options": {
+        "signal": "SIGNAL_MAIN_API_STARTED",
         "cwd": "./src/@apps/api/"
       },
       "commands": {
-        "run": "gapi start --local --lint --minify=false"
+        "clean": "rm -rf .cache",
+        "link": "gapi daemon link graphql",
+        "run": "npm start"
       }
     },
     "gateway": {
       "options": {
-        "depends": [
-          "api",
-          "vscode-cloud"
-
-        ],
+        "signal": "SIGNAL_GATEWAY_STARTED",
+        "depends": ["api", "vscode-cloud"],
         "cwd": "./src/@apps/gateway/"
       },
       "commands": {
-        "run": "gapi start --local --path=./index.ts"
+        "clean": "rm -rf .cache",
+        "link": "gapi daemon link graphql",
+        "run": "npm start"
       }
     },
     "vscode-cloud": {
       "options": {
+        "signal": "SIGNAL_VS_CODE_STARTED",
         "cwd": "./src/@apps/vscode-cloud/"
       },
       "commands": {
-        "run": "gapi start --local --inspect --minify=false"
+        "clean": "rm -rf .cache",
+        "link": "gapi daemon link graphql",
+        "run": "npm start"
+      }
+    },
+    "compile": {
+      "options": {
+        "cwd": ".",
+        "depends": ["frontend"]
+      },
+      "commands": {
+        "compile": "repo compile --watch"
       }
     }
   }

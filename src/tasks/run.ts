@@ -13,13 +13,15 @@ export async function Run(stack: string) {
     )
   }));
   let StacksMapped = [...StacksMappedOriginal];
+
   if (stack && !stack.includes('-c')) {
     StacksMapped = StacksMapped.filter(s => s.name === stack);
   }
+
   let priorityQueue = StacksMapped.filter(
     s => s.options && s.options.depends
   ) as Stack[];
-  const dependQueue: Stack[] = []
+  const dependQueue: Stack[] = [];
 
   priorityQueue.forEach(queue => {
     for (const depend of queue.options.depends) {
@@ -34,12 +36,19 @@ export async function Run(stack: string) {
         );
       }
       if (!priorityQueue.find(queue => queue.name === dependFound.name)) {
-        dependQueue.push(dependFound)
+        dependQueue.push(dependFound);
       }
     }
   });
+  const depends = [
+    ...new Set(
+      dependQueue
+        .map(item => item.name)
+        .map(name => StacksMappedOriginal.find(s => s.name === name))
+    )
+  ];
 
-  for (const depend of [...new Set(dependQueue.map(item => item.name).map(name => StacksMapped.find(s => s.name === name)))]) {
+  for (const depend of depends) {
     await RunCommands(depend);
   }
   await Promise.all(priorityQueue.map(async queue => await RunCommands(queue)));
@@ -62,6 +71,9 @@ export async function Run(stack: string) {
 }
 
 async function RunCommands(stack: Stack) {
+  if (!stack) {
+    throw new Error(`Missing stack ${JSON.stringify(stack)}`);
+  }
   for (const cmd of stack.commands) {
     await RunProcess(cmd, stack.options.cwd, stack.options.signal);
   }
