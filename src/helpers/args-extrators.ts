@@ -1,4 +1,4 @@
-export type Tasks = '--watch' | '-c' | '--multi-compile';
+export type Tasks = '--watch' | '-c' | '--multi-compile' | '--copy-modules';
 export const includes = (i: Tasks) => process.argv.toString().includes(i);
 export const nextOrDefault = (
   i: Tasks,
