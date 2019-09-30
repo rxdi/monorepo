@@ -4,14 +4,14 @@ import { promisify } from 'util';
 import { readdir } from 'fs';
 import { join } from 'path';
 import { MAIN_FOLDER, CONFIG } from '../constants';
-import { nextOrDefault } from '../helpers/args-extrators';
+import { includes } from '../helpers/args-extrators';
 
 export async function Compile() {
   await compileWorkspace();
   const apps = await promisify(readdir)(
     join(process.cwd(), MAIN_FOLDER, CONFIG.apps)
   );
-  if (nextOrDefault('--copy-modules')) {
+  if (includes('--copy-modules')) {
     await Promise.all(
       apps.map(async app => {
         await copyModules(
