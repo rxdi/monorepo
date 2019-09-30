@@ -1,5 +1,5 @@
 import { RunProcess } from '../helpers/run-process';
-import { readConfig, Stack } from '../helpers/read-config';
+import { readConfig, Stack, StackScriptOptions } from '../helpers/read-config';
 
 export async function Run(stack: string) {
   const config = await readConfig();
@@ -75,6 +75,7 @@ async function RunCommands(stack: Stack) {
     throw new Error(`Missing stack ${JSON.stringify(stack)}`);
   }
   for (const cmd of stack.commands) {
+    stack.options = stack.options || {} as StackScriptOptions
     await RunProcess(cmd, stack.options.cwd, stack.options.signal);
   }
 }
