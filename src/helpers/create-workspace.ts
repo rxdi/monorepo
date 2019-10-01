@@ -3,6 +3,9 @@ import { MAIN_FOLDER, CONFIG } from '../constants';
 import { checkExist } from './check-exist';
 import { join } from 'path';
 import { createTsConfig } from './create-tsconfig';
+import { createFrontend } from './create-frontend';
+import { createLib } from './create-lib';
+import { createBackend } from './create-backend';
 
 export async function createWorkspace() {
   try {
@@ -27,13 +30,12 @@ export async function createWorkspace() {
       stacks: {
         frontend: {
           options: {
+            depends: ['api'],
             cwd: './src/@apps/frontend/',
-            depends: ['gateway'],
             signal: 'Built in'
           },
           commands: {
             clean: 'rm -rf .cache',
-            link: 'gapi daemon link graphql',
             run: 'npm start'
           }
         },
@@ -44,37 +46,13 @@ export async function createWorkspace() {
           },
           commands: {
             clean: 'rm -rf .cache',
-            link: 'gapi daemon link graphql',
-            run: 'npm start'
-          }
-        },
-        gateway: {
-          options: {
-            signal: 'SIGNAL_GATEWAY_STARTED',
-            depends: ['api', 'cloud'],
-            cwd: './src/@apps/gateway/'
-          },
-          commands: {
-            clean: 'rm -rf .cache',
-            link: 'gapi daemon link graphql',
-            run: 'npm start'
-          }
-        },
-        cloud: {
-          options: {
-            signal: 'SIGNAL_VS_CODE_STARTED',
-            cwd: './src/@apps/cloud/'
-          },
-          commands: {
-            clean: 'rm -rf .cache',
-            link: 'gapi daemon link graphql',
             run: 'npm start'
           }
         },
         compile: {
           options: {
-            cwd: '.',
-            depends: ['frontend']
+            depends: ['frontend'],
+            cwd: '.'
           },
           commands: {
             compile: 'repo compile --watch'
@@ -91,6 +69,7 @@ export async function createWorkspace() {
         module: 'commonjs',
         target: 'es6',
         declaration: true,
+        composite: true,
         moduleResolution: 'node',
         emitDecoratorMetadata: true,
         experimentalDecorators: true,
@@ -125,9 +104,31 @@ export async function createWorkspace() {
 
   await createTsConfig(
     {
-      references: [{ path: './@lib/' }, { path: './@shared/' }]
+      references: [{ path: './@lib/' }, { path: './@shared/' }],
+      compilerOptions: {
+        composite: true
+      }
     },
     join(process.cwd(), MAIN_FOLDER)
+  );
+  await createTsConfig(
+    {
+      "name": "@rxdi/monorepo-example",
+      "engines": {
+        "node": "10"
+      },
+      "scripts": {
+        "postinstall": "npx repo compile && npx repo install && npx repo compile",
+        "start": "npx repo run start"
+      },
+      "devDependencies": {
+        "@rxdi/monorepo": "0.0.24",
+        "typescript": "3.6.3"
+      },
+      "private": true
+    },
+    process.cwd(),
+    'package.json'
   );
   await createTsConfig(
     {
@@ -146,23 +147,32 @@ export async function createWorkspace() {
     'tsconfig.settings.json'
   );
   for (const value of Object.values(CONFIG)) {
+
     const folder = join(process.cwd(), MAIN_FOLDER, value);
     if (!(await checkExist(folder))) {
       try {
         await makeDir(folder);
         await wait();
-        await createTsConfig(
-          {
-            references: [],
-            compilerOptions: {
-              composite: true
-            }
-          },
-          folder
-        );
+        if (value !== CONFIG.apps) {
+          await createTsConfig(
+            {
+              references: [],
+              compilerOptions: {
+                composite: true
+              }
+            },
+            folder
+          );
+        }
       } catch (e) {}
     }
   }
+  await createFrontend(
+    join(process.cwd(), MAIN_FOLDER, CONFIG.apps, 'frontend')
+  );
+  await createBackend(join(process.cwd(), MAIN_FOLDER, CONFIG.apps, 'api'));
+
+  await createLib('gosho');
 }
 
 function wait() {
