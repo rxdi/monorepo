@@ -125,7 +125,7 @@ export async function createWorkspace() {
         "start": "npx repo run start"
       },
       "devDependencies": {
-        "@rxdi/monorepo": "0.0.26",
+        "@rxdi/monorepo": "0.0.28",
         "typescript": "3.6.3"
       },
       "private": true
