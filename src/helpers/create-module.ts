@@ -23,6 +23,7 @@ export async function createModule(name: string, type: 'shared' | 'lib') {
       extends: '../../tsconfig.settings.json',
       compilerOptions: {
         declaration: true,
+        composite: true,
         outDir: `../../../node_modules/${CONFIG[type]}/${name}`
       }
     },
@@ -41,6 +42,6 @@ export async function createModule(name: string, type: 'shared' | 'lib') {
   if (hasTheSameModule) {
     throw new Error(`Module already present with name ${name}`);
   }
-  referenceTypescriptConfig.references.push({path: `./${name}`})
+  referenceTypescriptConfig.references.push({ path: `./${name}` });
   await createTsConfig(referenceTypescriptConfig, mainFolder);
 }

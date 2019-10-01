@@ -77,7 +77,7 @@ export async function createWorkspace() {
             depends: ['frontend']
           },
           commands: {
-            compile: 'repo compile --watch --multi-compile'
+            compile: 'repo compile --watch'
           }
         }
       }
@@ -153,7 +153,10 @@ export async function createWorkspace() {
         await wait();
         await createTsConfig(
           {
-            references: []
+            references: [],
+            compilerOptions: {
+              composite: true
+            }
           },
           folder
         );
