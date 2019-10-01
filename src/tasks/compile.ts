@@ -5,4 +5,5 @@ export async function Compile() {
   await compileWorkspace();
   await copyNodeModules();
   await compileWorkspace();
+  await copyNodeModules();
 }
