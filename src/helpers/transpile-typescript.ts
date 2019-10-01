@@ -1,12 +1,18 @@
 import { spawn, ChildProcessWithoutNullStreams } from 'child_process';
 import { includes } from './args-extrators';
 
-export const TranspileTypescript = (cwd: string) => {
+export const TranspileTypescript = (cwd: string, tsConfigPaths?: string[]) => {
   return new Promise(resolve => {
     const args = ['tsc'];
+
+    if (tsConfigPaths) {
+      args.push('-b')
+      args.push(...tsConfigPaths)
+    }
     if (includes('--watch')) {
       args.push('--watch');
     }
+
     const child = spawn('npx', args, { cwd });
     child.stdout.pipe(process.stdout);
     child.stderr.pipe(process.stderr);

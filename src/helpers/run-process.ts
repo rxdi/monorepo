@@ -1,5 +1,12 @@
-import { spawn, ChildProcessWithoutNullStreams } from 'child_process';
+import {
+  spawn,
+  ChildProcessWithoutNullStreams,
+  ChildProcess
+} from 'child_process';
+import { copyNodeModules } from './copy-modules';
+import { reactOnChanges } from './react-on-changes';
 
+const childProcesses = new Map<string, ChildProcess>();
 export const RunProcess = (
   command: string,
   cwd: string = process.cwd(),
@@ -8,10 +15,18 @@ export const RunProcess = (
   return new Promise(resolve => {
     console.log(`Starting process: "${command}" Directory: ${cwd}`);
     const child = spawn('npx', command.split(' '), { cwd });
-    child.stdout.on('data', (message: number) => {
+    childProcesses.set(cwd, child);
+    child.stdout.on('data', async (message: Buffer) => {
       if (message.toString().includes(signal)) {
         console.log(`Resolve signal triggered '${signal}'`);
         resolve(message);
+      }
+      if (
+        message.toString().includes('File change detected') &&
+        cwd !== process.cwd()
+      ) {
+        await copyNodeModules();
+        await reactOnChanges()
       }
     });
     child.stdout.pipe(process.stdout);
