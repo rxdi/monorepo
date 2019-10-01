@@ -6,6 +6,7 @@ import { createTsConfig } from './create-tsconfig';
 import { createFrontend } from './create-frontend';
 import { createLib } from './create-lib';
 import { createBackend } from './create-backend';
+import { writeFile } from './write-file';
 
 export async function createWorkspace() {
   try {
@@ -25,6 +26,8 @@ export async function createWorkspace() {
     process.cwd(),
     'repo.json'
   );
+  await writeFile(join(process.cwd(), '.gitignore'), `node_modules\ndist\n.cache`);
+  await writeFile(join(process.cwd(), '.npmrc'), `package-lock=false`);
   await createTsConfig(
     {
       stacks: {

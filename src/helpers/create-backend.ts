@@ -1,13 +1,12 @@
-import { promisify } from 'util';
-import { writeFile } from 'fs';
 import { makeDir } from './make-dir';
 import { join } from 'path';
 import { createTsConfig } from './create-tsconfig';
+import { writeFile } from './write-file';
 
 export async function createBackend(path: string) {
   await makeDir(path);
-  await writeF(join(path, '.gitignore'), `node_modules\ndist\n.cache`);
-  await writeF(
+  await writeFile(join(path, '.gitignore'), `node_modules\ndist\n.cache`);
+  await writeFile(
     join(path, 'index.ts'),
     `import { MyLibFunction } from '@lib/gosho';
 console.log(MyLibFunction())
@@ -55,6 +54,3 @@ console.log('SIGNAL_MAIN_API_STARTED')
   );
 }
 
-async function writeF(path: string, content: string) {
-  await promisify(writeFile)(path, content, { encoding: 'utf-8' });
-}
