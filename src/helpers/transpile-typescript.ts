@@ -1,7 +1,7 @@
 import { spawn, ChildProcessWithoutNullStreams } from 'child_process';
 import { includes } from './args-extrators';
 
-export const TranspileTypescript = (cwd: string, tsConfigPaths?: string[]) => {
+export const TranspileTypescript = (cwd: string, tsConfigPaths?: string[], config: {output: boolean} = {output: true}) => {
   return new Promise(resolve => {
     const args = ['tsc'];
 
@@ -14,9 +14,10 @@ export const TranspileTypescript = (cwd: string, tsConfigPaths?: string[]) => {
     }
 
     const child = spawn('npx', args, { cwd });
-    child.stdout.pipe(process.stdout);
-    child.stderr.pipe(process.stderr);
-
+    if (config.output) {
+      child.stdout.pipe(process.stdout);
+      child.stderr.pipe(process.stderr);
+    }
 
     function exitHandler(child: ChildProcessWithoutNullStreams) {
       child.kill();
