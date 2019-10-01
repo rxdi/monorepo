@@ -7,6 +7,7 @@ Create easy `monorepo` with typescript
 - No dependencies
 - Maintain monorepo with ease
 - Created for Typescript
+- 13 KB bundled
 
 ## Installation
 
