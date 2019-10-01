@@ -23,14 +23,15 @@ export async function copyNodeModules() {
   );
   await Promise.all(
     apps.map(async app => {
-      await copyModules(
-        'lib',
-        join(process.cwd(), MAIN_FOLDER, CONFIG.apps, app, 'node_modules')
+      const appNodeModules = join(
+        process.cwd(),
+        MAIN_FOLDER,
+        CONFIG.apps,
+        app,
+        'node_modules'
       );
-      await copyModules(
-        'shared',
-        join(process.cwd(), MAIN_FOLDER, CONFIG.apps, app, 'node_modules')
-      );
+      await copyModules('lib', appNodeModules);
+      await copyModules('shared', appNodeModules);
     })
   );
 }

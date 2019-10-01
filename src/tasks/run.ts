@@ -74,6 +74,7 @@ async function RunCommands(stack: Stack) {
   if (!stack) {
     throw new Error(`Missing stack ${JSON.stringify(stack)}`);
   }
+
   for (const cmd of stack.commands) {
     stack.options = stack.options || {} as StackScriptOptions
     await RunProcess(cmd, stack.options.cwd, stack.options.signal);

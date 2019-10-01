@@ -7,8 +7,84 @@ import { createTsConfig } from './create-tsconfig';
 export async function createWorkspace() {
   try {
     await makeDir(MAIN_FOLDER);
+    await makeDir(join(process.cwd(), 'tasks'));
   } catch (e) {}
-
+  await createTsConfig(
+    {
+      stacks: {
+        start: {
+          commands: {
+            start: 'npx repo run -c ./tasks/run.json'
+          }
+        }
+      }
+    },
+    process.cwd(),
+    'repo.json'
+  );
+  await createTsConfig(
+    {
+      stacks: {
+        frontend: {
+          options: {
+            cwd: './src/@apps/frontend/',
+            depends: ['gateway'],
+            signal: 'Built in'
+          },
+          commands: {
+            clean: 'rm -rf .cache',
+            link: 'gapi daemon link graphql',
+            run: 'npm start'
+          }
+        },
+        api: {
+          options: {
+            signal: 'SIGNAL_MAIN_API_STARTED',
+            cwd: './src/@apps/api/'
+          },
+          commands: {
+            clean: 'rm -rf .cache',
+            link: 'gapi daemon link graphql',
+            run: 'npm start'
+          }
+        },
+        gateway: {
+          options: {
+            signal: 'SIGNAL_GATEWAY_STARTED',
+            depends: ['api', 'cloud'],
+            cwd: './src/@apps/gateway/'
+          },
+          commands: {
+            clean: 'rm -rf .cache',
+            link: 'gapi daemon link graphql',
+            run: 'npm start'
+          }
+        },
+        cloud: {
+          options: {
+            signal: 'SIGNAL_VS_CODE_STARTED',
+            cwd: './src/@apps/cloud/'
+          },
+          commands: {
+            clean: 'rm -rf .cache',
+            link: 'gapi daemon link graphql',
+            run: 'npm start'
+          }
+        },
+        compile: {
+          options: {
+            cwd: '.',
+            depends: ['frontend']
+          },
+          commands: {
+            compile: 'repo compile --watch --multi-compile'
+          }
+        }
+      }
+    },
+    join(process.cwd(), 'tasks'),
+    'run.json'
+  );
   await createTsConfig(
     {
       compilerOptions: {

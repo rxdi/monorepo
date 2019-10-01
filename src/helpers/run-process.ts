@@ -13,8 +13,17 @@ export const RunProcess = (
   signal?: string
 ) => {
   return new Promise(resolve => {
+    let splittedCommand = command.split(' ');
+    let defaultCommand = 'npx';
+    if (splittedCommand.includes('#exit')) {
+      process.exit(0);
+    }
+    if (splittedCommand.includes('>')) {
+      defaultCommand = splittedCommand[1]
+      splittedCommand = splittedCommand.filter(c => c !== '>' && c !== defaultCommand )
+    }
+    const child = spawn(defaultCommand, splittedCommand, { cwd });
     console.log(`Starting process: "${command}" Directory: ${cwd}`);
-    const child = spawn('npx', command.split(' '), { cwd });
     childProcesses.set(cwd, child);
     child.stdout.on('data', async (message: Buffer) => {
       if (message.toString().includes(signal)) {
@@ -26,7 +35,7 @@ export const RunProcess = (
         cwd !== process.cwd()
       ) {
         await copyNodeModules();
-        await reactOnChanges()
+        await reactOnChanges();
       }
     });
     child.stdout.pipe(process.stdout);
