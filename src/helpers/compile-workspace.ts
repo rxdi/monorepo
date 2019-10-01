@@ -25,7 +25,7 @@ export async function compileWorkspace() {
         dir = normalize(join(process.cwd(), MAIN_FOLDER, CONFIG.lib, file));
       }
       const cwd = dir.substring(0, dir.lastIndexOf('/'));
-      await TranspileTypescript(cwd, [dir], { output:false });
+      await TranspileTypescript(cwd, [dir]);
     })
   );
 }
