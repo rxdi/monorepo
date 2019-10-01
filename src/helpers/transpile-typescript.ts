@@ -1,5 +1,6 @@
 import { spawn, ChildProcessWithoutNullStreams } from 'child_process';
 import { includes } from './args-extrators';
+import { copyNodeModules } from './copy-modules';
 
 export const TranspileTypescript = (cwd: string, tsConfigPaths?: string[], config: {output: boolean} = {output: true}) => {
   return new Promise(resolve => {
@@ -18,7 +19,14 @@ export const TranspileTypescript = (cwd: string, tsConfigPaths?: string[], confi
       child.stdout.pipe(process.stdout);
       child.stderr.pipe(process.stderr);
     }
-
+    child.stdout.on('data', async (message: Buffer) => {
+      if (
+        message.toString().includes('File change detected') &&
+        cwd !== process.cwd()
+      ) {
+        setTimeout(async () => await copyNodeModules(), 1000)
+      }
+    });
     function exitHandler(child: ChildProcessWithoutNullStreams) {
       child.kill();
     }
